@@ -1,0 +1,6 @@
+look at my current esp32 code @currentProject.ino  as you see we currently have manual setup of  serial for registtering , or etc , now i need to improe it to work with my backend 
+this is my clear setup to achive this when i correctly register new student i need to poll the id of the student i mean instead of relying the serial monitor just poll the backend and get the last inserted  student fingerprint id  , do not wrorry i have many refrences to acheive this 
+look how i did in my other project @arduino.ino @customer.routes.js @booking.controller.js @esp32.routes.js  when verified booking it polss the esp calls the poll and get the code etc 
+
+can we acheive this also when deleted student poll also and receive the delete command for teh deleted student 
+ 
