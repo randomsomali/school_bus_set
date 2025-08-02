@@ -4,6 +4,13 @@ import Attendance from "../models/attendance.model.js";
 // Store pending commands for ESP32 fingerprint system
 let pendingFingerprintCommand = null;
 
+// Helper function to get Somalia time (UTC+3)
+const getSomaliaTime = () => {
+  const utc = new Date();
+  const somaliaTime = new Date(utc.getTime() + (3 * 60 * 60 * 1000)); // UTC+3
+  return somaliaTime;
+};
+
 export const pollFingerprintCommand = async (req, res) => {
   try {
     if (pendingFingerprintCommand) {
@@ -50,8 +57,8 @@ export const createFingerprintAttendance = async (req, res, next) => {
       });
     }
 
-    // Get current local time (Somalia time)
-    const now = new Date(); // Already in local Somalia time
+    // Get current Somalia time (UTC+3)
+    const now = getSomaliaTime();
     const hour = now.getHours();
     const type = hour < 12 ? "enter" : "leave";
     const timeString = now.toTimeString().split(" ")[0];
