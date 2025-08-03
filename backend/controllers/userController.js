@@ -1,5 +1,9 @@
 import User from "../models/users.model.js";
 import { userSchema } from "../validators/validator.js";
+import Student from "../models/student.model.js";
+import Attendance from "../models/attendance.model.js"; // Make sure this is imported
+
+
 
 // Get all users (admin only)
 export const getAllUsers = async (req, res, next) => {
@@ -76,13 +80,32 @@ export const updateUser = async (req, res, next) => {
 // Delete a user (admin only)
 export const deleteUser = async (req, res, next) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
     if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found" });
     }
-    res.json({ success: true, message: "User deleted successfully" });
+
+    // Only apply cascading delete if user is a parent
+    if (user.role === "parent") {
+      // Find all students of this parent
+      const students = await Student.find({ parent: user._id });
+
+      // Get their IDs
+      const studentIds = students.map((s) => s._id);
+
+      // Delete all attendances for these students
+      await Attendance.deleteMany({ student: { $in: studentIds } });
+
+      // Delete all the students
+      await Student.deleteMany({ parent: user._id });
+    }
+
+    // Delete the user (parent)
+    await User.findByIdAndDelete(req.params.id);
+
+    res.json({ success: true, message: "User and related data deleted successfully" });
   } catch (error) {
     next(error);
   }
