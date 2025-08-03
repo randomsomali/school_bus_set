@@ -6,9 +6,7 @@ let pendingFingerprintCommand = null;
 
 // Helper function to get Somalia time (UTC+3)
 const getSomaliaTime = () => {
-  const utc = new Date();
-  const somaliaTime = new Date(utc.getTime() + (3 * 60 * 60 * 1000)); // UTC+3
-  return somaliaTime;
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Mogadishu" }));
 };
 
 export const pollFingerprintCommand = async (req, res) => {
