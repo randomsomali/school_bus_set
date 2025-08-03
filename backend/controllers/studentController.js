@@ -2,6 +2,8 @@ import Student from "../models/student.model.js";
 import User from "../models/users.model.js";
 import { studentSchema } from "../validators/validator.js";
 import { setPendingFingerprintCommand } from "./fingerprint.controller.js";
+import Attendance from "../models/attendance.model.js";
+
 
 // Generate unique fingerprint ID between 1-127
 const generateFingerprintId = async () => {
@@ -136,19 +138,25 @@ export const deleteStudent = async (req, res, next) => {
         .json({ success: false, message: "Student not found" });
     }
 
-    // Store fingerprint ID before deletion for ESP32 command
     const fingerprintId = student.fingerprintId;
     const studentName = student.name;
 
+    // Delete all attendance records related to this student
+    await Attendance.deleteMany({ student: student._id });
+
+    // Delete the student
     await Student.findByIdAndDelete(req.params.id);
 
-    // Set pending command for ESP32 to delete fingerprint
+    // Optional: Clean up orphaned attendance records
+    await Attendance.deleteMany({ student: { $exists: true, $eq: null } });
+
+    // Notify ESP32 to remove fingerprint
     setPendingFingerprintCommand({
       success: true,
       message: "Student deleted - remove fingerprint",
       code: 2, // 2 = delete
-      fingerprintId: fingerprintId,
-      studentName: studentName,
+      fingerprintId,
+      studentName,
       studentId: req.params.id,
     });
 
@@ -156,7 +164,7 @@ export const deleteStudent = async (req, res, next) => {
     console.log(`   - Name: ${studentName}`);
     console.log(`   - Fingerprint ID: ${fingerprintId}`);
 
-    res.json({ success: true, message: "Student deleted successfully" });
+    res.json({ success: true, message: "Student and related records deleted" });
   } catch (error) {
     next(error);
   }
