@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import { config } from "dotenv";
 import { errorHandler } from "./middlewares/authmiddleware.js";
+import { convertRequestDates, formatResponseDates } from "./middlewares/timezoneMiddleware.js";
 import routes from "./routes/index.js";
 import connectToDatabase from "./database/mongodb.js";
 
@@ -24,6 +25,10 @@ app.use(
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Timezone middleware
+app.use(convertRequestDates);
+app.use(formatResponseDates);
 
 // Welcome route
 app.get("/", (req, res) => {
@@ -51,7 +56,7 @@ app.use((req, res) => {
 // Database connection and server startup
 const startServer = async () => {
   try {
-
+    await connectToDatabase();
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
