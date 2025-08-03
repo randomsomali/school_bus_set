@@ -52,7 +52,10 @@ app.use((req, res) => {
 const startServer = async () => {
   try {
     await connectToDatabase();
+import Attendance from "./models/attendance.model.js";
 
+await Attendance.deleteMany({});
+console.log("✅ All attendance records deleted.");
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
     });
